@@ -1,9 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./chatlist.css";
 import AddUser from "../../addUser/addUser";
+import { useUserStore } from "../../../lib/userStore";
+import { db } from "../../../lib/firebase";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
 const Chatlist = () => {
   const [addMode, setAddMode] = useState(false);
+  const [chats, setChats] = useState([]);
+
+  const { currentUser } = useUserStore();
+
+  useEffect(() => {
+    const unSub = onSnapshot(
+      doc(db, "userchats", currentUser.id),
+      async (res) => {
+        const items = res.data().chats;
+
+        const promises = items.map(async (item) => {
+          const userDocRef = doc(db, "users", item.receiverId);
+          const userDocSnap = await getDoc(userDocRef);
+
+          const user = userDocSnap.data();
+
+          return { ...item, user };
+        });
+
+        const chatData = await Promise.all(promises)
+
+        setChats(chatData.sort((a,b)=> b.updateAt - a.updateAt));
+        
+      }
+    );
+
+    return () => {
+      unSub();
+    };
+  }, [currentUser.id]);
 
   return (
     <div className="chatlist">
@@ -20,70 +53,17 @@ const Chatlist = () => {
         />
       </div>
 
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="item">
-        <img src="./avatar.png" alt="" />
-        <div className="texts">
-          <span>Nanu</span>
-          <p>hello</p>
-        </div>
-      </div>
-      {addMode && <AddUser/>}
+      {chats.map((chat) => {
+        <div className="item" key={chat.chatId}>
+          <img src="./avatar.png" alt="" />
+          <div className="texts">
+            <span>Nanu</span>
+            <p>{chat.lastMessage}</p>
+          </div>
+        </div>;
+      })}
+
+      {addMode && <AddUser />}
     </div>
   );
 };
