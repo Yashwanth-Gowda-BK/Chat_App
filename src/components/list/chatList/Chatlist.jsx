@@ -17,7 +17,7 @@ const Chatlist = () => {
       async (res) => {
         const items = res.data().chats;
 
-        const promises = items.map(async (item) => {
+        const promises = items.map( async(item) => {
           const userDocRef = doc(db, "users", item.receiverId);
           const userDocSnap = await getDoc(userDocRef);
 
@@ -28,7 +28,7 @@ const Chatlist = () => {
 
         const chatData = await Promise.all(promises)
 
-        setChats(chatData.sort((a,b)=> b.updateAt - a.updateAt));
+        setChats(chatData.sort((a,b)=> b.updatedAt - a.updatedAt));
         
       }
     );
@@ -54,13 +54,15 @@ const Chatlist = () => {
       </div>
 
       {chats.map((chat) => {
-        <div className="item" key={chat.chatId}>
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <span>Nanu</span>
-            <p>{chat.lastMessage}</p>
+        return (
+          <div className="item" key={chat.chatId}>
+            <img src={ chat.user.avatar || "./avatar.png" }alt="" />
+            <div className="texts">
+              <span>{chat.user.username}</span>
+              <p>{chat.lastMessage}</p>
+            </div>
           </div>
-        </div>;
+        );
       })}
 
       {addMode && <AddUser />}
