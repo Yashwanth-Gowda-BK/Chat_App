@@ -17,7 +17,8 @@ const Chat = () => {
     url: "",
   });
 
-  const { chatId, user } = useChatStore();
+  const { chatId, user, isCurrentUserBlocked, isReceiverBlocked } =
+    useChatStore();
   const { currentUser } = useUserStore();
 
   const endRef = useRef(null);
@@ -106,9 +107,9 @@ const Chat = () => {
     <div className="chat">
       <div className="top">
         <div className="user">
-          <img src="./avatar.png" alt="" />
+          <img src={user?.avatar || "./avatar.png"} alt="" />
           <div className="texts">
-            <span>jane</span>
+            <span>{user?.username}</span>
             <p>
               random Lorem ipsum dolor sit amet consectetur adipisicing elit.
               lorem200
@@ -123,7 +124,12 @@ const Chat = () => {
       </div>
       <div className="center">
         {chat?.messages?.map((message) => (
-          <div className={message.senderId === currentUser?.id ?"message own": "message"} key={message?.createAt}>
+          <div
+            className={
+              message.senderId === currentUser?.id ? "message own" : "message"
+            }
+            key={message?.createAt}
+          >
             <img src="./avatar.png" alt="" />
             <div className="texts">
               {message.img && <img src={message.img} alt="" />}
@@ -132,11 +138,13 @@ const Chat = () => {
             </div>
           </div>
         ))}
-        {img.url && <div className="message own">
-          <div className="texts">
-            <img src={img.url} alt="" />
+        {img.url && (
+          <div className="message own">
+            <div className="texts">
+              <img src={img.url} alt="" />
+            </div>
           </div>
-        </div>}
+        )}
         <div className="" ref={endRef}></div>
       </div>
       <div className="bottom">
@@ -156,9 +164,10 @@ const Chat = () => {
         </div>
         <input
           type="text"
-          placeholder="Type a message..."
+          placeholder={isCurrentUserBlocked || isReceiverBlocked ? "You cannot send a message" :"Type a message..."}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          disabled={isCurrentUserBlocked || isReceiverBlocked}
         />
         <div className="emoji">
           <img src="./emoji.png" alt="" onClick={() => setOpen(!open)} />
@@ -166,7 +175,11 @@ const Chat = () => {
             <EmojiPicker open={open} onEmojiClick={handleEmoji} />
           </div>
         </div>
-        <button className="sendButton" onClick={handleSend}>
+        <button
+          className="sendButton"
+          onClick={handleSend}
+          disabled={isCurrentUserBlocked || isReceiverBlocked}
+        >
           Send
         </button>
       </div>
