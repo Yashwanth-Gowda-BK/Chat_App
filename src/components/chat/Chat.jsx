@@ -4,11 +4,14 @@ import EmojiPicker from "emoji-picker-react";
 import { onSnapshot } from "firebase/firestore";
 import { doc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
 
 const Chat = () => {
   const [open, setOpen] = useState(false);
   const [chat, setChat] = useState();
   const [text, setText] = useState("");
+
+  const { chatId } = useChatStore();
 
   const endRef = useRef(null);
 
@@ -17,14 +20,14 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    const unSub = onSnapshot(doc(db, "chats", ""), (res) => {
+    const unSub = onSnapshot(doc(db, "chats", chatId), (res) => {
       setChat(res.data());
     });
 
     return () => {
       unSub();
     };
-  }, []);
+  }, [chatId]);
 
   const handleEmoji = (e) => {
     setText((prev) => prev + e.emoji);
@@ -51,80 +54,22 @@ const Chat = () => {
         </div>
       </div>
       <div className="center">
-        <div className="message own">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Obcaecati explicabo distinctio voluptate!
-            </p>
-            <span>1 min ago</span>
+        {chat?.messages?.map((message) => (
+          <div className="message own" key={message?.createAt}>
+            <img src="./avatar.png" alt="" />
+            <div className="texts">
+              {message.img && <img
+                src={message.img}
+                alt=""
+              />}
+              <p>
+                {message.text}
+              </p>
+              {/* <span>1 min ago</span> */}
+            </div>
           </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Obcaecati explicabo distinctio voluptate!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Obcaecati explicabo distinctio voluptate!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Obcaecati explicabo distinctio voluptate!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Obcaecati explicabo distinctio voluptate!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <img
-              src="https://th.bing.com/th?id=ORMS.3572b829acf3c5d8f178f7a0e6713e80&pid=Wdp&w=612&h=328&qlt=90&c=1&rs=1&dpr=1&p=0"
-              alt=""
-            />
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Obcaecati explicabo distinctio voluptate!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Obcaecati explicabo distinctio voluptate!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
+        ))}
+
         <div className="" ref={endRef}></div>
       </div>
       <div className="bottom">
